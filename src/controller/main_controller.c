@@ -103,26 +103,76 @@ void run_main_menu(void) {
    - press_enter(NULL) aguarda ENTER para dar tempo de leitura ao usuário.
 */
 static void run_patient_menu(void) {
+    static PatientList list;        // Lista persistente enquanto o programa roda
+    static int initialized = 0;
+    if (!initialized) {
+        initList(&list);
+        initialized = 1;
+    }
+
     for (;;) {
-        show_patient_menu();  // VIEW: apenas imprime o submenu
+        show_patient_menu();
         int option = read_int_in_range("Escolha uma opção [1-3,9]: ", 1, 9);
-        if (option == 9) break;  // Volta ao menu anterior (sai do laço)
+        if (option == 9) break;
 
         switch (option) {
-            case 1: 
-                puts("[TODO] Inserir novo paciente"); 
+            case 1: {
+                Patient p;
+                printf("ID: ");
+                scanf("%d", &p.id);
+                printf("Nome: ");
+                getchar(); // consome '\n'
+                fgets(p.name, sizeof(p.name), stdin);
+                p.name[strcspn(p.name, "\n")] = '\0';
+
+                printf("CPF: ");
+                fgets(p.cpf, sizeof(p.cpf), stdin);
+                p.cpf[strcspn(p.cpf, "\n")] = '\0';
+
+                printf("Idade: ");
+                scanf("%d", &p.age);
+
+                printf("Sexo (M/F): ");
+                getchar();
+                scanf("%c", &p.gender);
+
+                printf("Condição: ");
+                getchar();
+                fgets(p.condition, sizeof(p.condition), stdin);
+                p.condition[strcspn(p.condition, "\n")] = '\0';
+
+                printf("Prioridade [1-Alta / 2-Média / 3-Baixa]: ");
+                scanf("%d", &p.priority);
+
+                insertPatient(&list, p);
+                printf("Paciente inserido com sucesso!\n");
                 break;
-            case 2: 
-                puts("[TODO] Listar todos os pacientes"); 
+            }
+            case 2:
+                printPatients(&list);
                 break;
-            case 3: 
-                puts("[TODO] Buscar paciente por CPF"); 
+            case 3: {
+                char cpf[15];
+                printf("Digite o CPF: ");
+                getchar();
+                fgets(cpf, sizeof(cpf), stdin);
+                cpf[strcspn(cpf, "\n")] = '\0';
+
+                Patient* found = searchPatientByCPF(&list, cpf);
+                if (found)
+                    printf("Paciente encontrado: %s (%d anos)\n", found->name, found->age);
+                else
+                    printf("Paciente não encontrado.\n");
                 break;
-            default: 
+            }
+            default:
                 puts("Opção inválida.");
         }
+
         press_enter(NULL); // Pausa para o usuário ler a saída antes de redesenhar o menu
     }
+
+    freeList(&list);  // Limpa memória ao sair do submenu (opcional)
 }
 
 /*
@@ -179,3 +229,4 @@ static void run_history_menu(void) {
         press_enter(NULL); // Pausa para leitura
     }
 }
+
