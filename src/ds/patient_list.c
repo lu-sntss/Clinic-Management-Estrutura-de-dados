@@ -167,3 +167,33 @@ void free_list(PatientList* list) {
     }
     list->head = NULL; // Deixa a lista em um estado limpo e seguro
 }
+
+/*
+ Função: print_all_patient
+ Responsabilidade:
+   - Percorrer e exibir todos os pacientes cadastrados na lista, do primeiro
+     ao último.
+ Parâmetros:
+   - list: A lista de pacientes a ser exibida.
+ Lógica:
+   - Primeiro, trata o caso de a lista estar vazia.
+   - Cria um ponteiro temporário 'current' que começa na cabeça da lista.
+   - Em um loop, enquanto 'current' não for NULL (fim da lista):
+     a. Imprime os dados do paciente no nó atual.
+     b. Avança 'current' para o próximo nó da sequência (current = current->next).
+*/
+void print_all_patient(PatientList* list) {
+    if (list->head == NULL) { // Caso especial: lista vazia
+        printf("Nenhum paciente cadastrado.\n");
+        return;
+    }
+
+    Node* current = list->head; // Ponteiro para percorrer a lista sem perder a referência da cabeça
+    printf("\n=== Lista de Pacientes ===\n");
+    while (current != NULL) {
+        Patient p = current->data;
+        printf("ID: %d | Nome: %s | CPF: %s | Idade: %d | Prioridade: %d\n",
+               p.id, p.name, p.cpf, p.age, p.priority);
+        current = current->next; // Move para o próximo nó
+    }
+}
