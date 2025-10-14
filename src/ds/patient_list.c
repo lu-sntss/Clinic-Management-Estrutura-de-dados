@@ -57,6 +57,8 @@ void init_patient_list(PatientList* list) {
    - list: Ponteiro para a lista onde o paciente será inserido.
    - patient: Os dados do paciente a serem adicionados (copiados para a lista).
  Lógica de Implementação:
+   0. (NOVO) Verifica se já existe um paciente com o mesmo CPF; se existir,
+      não insere para manter unicidade de CPF.
    1. Aloca memória dinamicamente para um novo 'Node' (o contêiner).
    2. Verifica se a alocação de memória foi bem-sucedida. É uma boa prática
       de programação defensiva para evitar que o programa quebre.
@@ -64,48 +66,23 @@ void init_patient_list(PatientList* list) {
    4. O 'next' do novo nó aponta para o que era o antigo início da lista.
    5. A cabeça ('head') da lista passa a ser o novo nó que acabamos de criar.
 */
-void insert_patient(PatientList* list, Patient patient) {
-    // 1. Aloca um "contêiner" (Node) para guardar os dados do paciente
-    Node* newNode = malloc(sizeof(Node));
-    if (!newNode) { // 2. Se malloc falhar (faltar memória), ele retorna NULL
-        printf("Erro de alocação de memória!\n");
-        return;
-    }
+int insert_patient(PatientList *list, const Patient *p) {
+    if (!list || !p) return 0;
 
-    newNode->data = patient;          // 3. Coloca os dados do paciente no contêiner
-    newNode->next = list->head;       // 4. O novo nó agora "aponta" para o antigo primeiro
-    list->head = newNode;             // 5. A lista oficialmente começa neste novo nó
+    /* Unicidade de CPF */
+    const Patient *dup = search_patient_by_CPF(list, p->cpf);
+    if (dup) return 0;
+
+    Node *newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) return 0;
+
+    newNode->data = *p;          /* copia por valor a partir do ponteiro */
+    newNode->next = list->head;  /* insere no início (O(1)) */
+    list->head    = newNode;
+
+    return 1;
 }
 
-/*
- Função: print_all_patient
- Responsabilidade:
-   - Percorrer e exibir todos os pacientes cadastrados na lista, do primeiro
-     ao último.
- Parâmetros:
-   - list: A lista de pacientes a ser exibida.
- Lógica:
-   - Primeiro, trata o caso de a lista estar vazia.
-   - Cria um ponteiro temporário 'current' que começa na cabeça da lista.
-   - Em um loop, enquanto 'current' não for NULL (fim da lista):
-     a. Imprime os dados do paciente no nó atual.
-     b. Avança 'current' para o próximo nó da sequência (current = current->next).
-*/
-void print_all_patient(PatientList* list) {
-    if (list->head == NULL) { // Caso especial: lista vazia
-        printf("Nenhum paciente cadastrado.\n");
-        return;
-    }
-
-    Node* current = list->head; // Ponteiro para percorrer a lista sem perder a referência da cabeça
-    printf("\n=== Lista de Pacientes ===\n");
-    while (current != NULL) {
-        Patient p = current->data;
-        printf("ID: %d | Nome: %s | CPF: %s | Idade: %d | Prioridade: %d\n",
-               p.id, p.name, p.cpf, p.age, p.priority);
-        current = current->next; // Move para o próximo nó
-    }
-}
 
 /*
  Função: search_patient_by_CPF
@@ -113,28 +90,52 @@ void print_all_patient(PatientList* list) {
    - Buscar um paciente na lista usando o CPF como chave única de identificação.
  Parâmetros:
    - list: A lista onde a busca será realizada.
-   - cpf: A string de CPF a ser procurada. É 'const' para garantir que a
-          função não altere o valor que está sendo buscado.
+   - cpf:  A string de CPF a ser procurada (não é modificada pela função).
  Retorno:
    - Retorna um PONTEIRO para os dados do paciente (Patient) se encontrado.
    - Retorna NULL se nenhum paciente com o CPF informado for encontrado.
  Lógica:
-   - Percorre a lista de forma similar à função print_all_patient.
-   - Em cada nó, usa strcmp() para comparar o CPF do nó atual com o CPF buscado.
-   - Se strcmp() retornar 0 (strings são iguais), a função retorna o endereço
-     dos dados do paciente (&current->data) e para a busca.
-   - Se chegar ao final da lista sem encontrar, retorna NULL.
+   1. Verifica argumentos básicos (list e cpf). Se inválidos, retorna NULL.
+   2. Percorre a lista a partir de 'head' até o fim (cur = cur->next).
+   3. Em cada nó, compara o CPF armazenado com o CPF buscado via strcmp().
+   4. Se strcmp() retornar 0 (strings iguais), retorna &cur->data imediatamente.
+   5. Se chegar ao final sem encontrar, retorna NULL.
+ Observações:
+   - Complexidade de tempo: O(n), onde n é o número de nós da lista.
+   - Pressupõe que o CPF já foi normalizado no momento da entrada
+     (ex.: sem '\n' e sem espaços nas pontas). A comparação é exata:
+     "111.222.333-44" é diferente de "11122233344".
 */
-Patient* search_patient_by_CPF(PatientList* list, const char* cpf) {
-    Node* current = list->head;
-    while (current != NULL) {
-        if (strcmp(current->data.cpf, cpf) == 0) { // Compara os CPFs
-            return &current->data; // Encontrado! Retorna o endereço dos dados.
-        }
-        current = current->next; // Não é este, vamos para o próximo.
+const Patient* search_patient_by_CPF(const PatientList *list, const char *cpf) {
+    if (!list || !cpf) return NULL;
+    for (Node *cur = list->head; cur; cur = cur->next) {
+        if (strcmp(cur->data.cpf, cpf) == 0) return &cur->data;
     }
-    return NULL; // Percorreu tudo e não achou.
+    return NULL;
 }
+
+// /*
+//  Função: id_exists  (opcional, auxiliar)
+//  Responsabilidade:
+//    - Verificar se já existe um paciente com o ID informado na lista.
+//  Parâmetros:
+//    - list: Lista onde a verificação será feita.
+//    - id:   Identificador numérico do paciente a verificar.
+//  Retorno:
+//    - Retorna 1 se existir ao menos um nó com 'data.id == id'.
+//    - Retorna 0 se não encontrar nenhum ID igual.
+//  Lógica:
+//    - Percorre a lista do 'head' ao fim comparando 'cur->data.id == id'.
+//    - Se encontrar, retorna 1 imediatamente; senão, ao final retorna 0.
+//    - Complexidade O(n).
+// */
+// static int id_exists(const PatientList *list, int id) {
+//     for (Node *cur = list->head; cur; cur = cur->next) {
+//         if (cur->data.id == id) return 1;
+//     }
+//     return 0;
+// }
+
 
 /*
  Função: free_list

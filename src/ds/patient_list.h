@@ -25,13 +25,13 @@ typedef struct {
 void init_patient_list(PatientList* list);
 
 /* Insere um novo paciente no início da lista. */
-void insert_patient(PatientList* list, Patient patient);
+int insert_patient(PatientList *list, const Patient *p);
 
 /* Exibe todos os pacientes da lista no console. */
 void print_all_patient(PatientList* list);
 
-/* Busca um paciente pelo CPF. Retorna ponteiro para o paciente ou NULL se não encontrar. */
-Patient* search_patient_by_CPF(PatientList* list, const char* cpf);
+/* Busca por CPF; retorna ponteiro constante para o Patient na lista, ou NULL.*/
+const Patient* search_patient_by_CPF(const PatientList *list, const char *cpf);
 
 /* Libera toda a memória alocada pelos nós da lista, evitando memory leaks. */
 void free_list(PatientList* list);

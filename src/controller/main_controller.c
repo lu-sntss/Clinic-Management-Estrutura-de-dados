@@ -52,6 +52,10 @@ static void run_patient_menu(void);
 static void run_queue_menu(void);
 static void run_history_menu(void);
 
+/* Lista única de pacientes, viva enquanto o programa roda */
+static PatientList global_patient_list;
+static int g_inited = 0;
+
 /* =========================
    Loop do menu principal
    ========================= */
@@ -67,6 +71,12 @@ static void run_history_menu(void);
    - Podemos simplificar se de acordo com o time
 */
 void run_main_menu(void) {
+
+    if (!g_inited) {                 // garante init da lista uma vez só no programa
+        init_patient_list(&global_patient_list);
+        g_inited = 1;
+    }
+
     for (;;) { // Basicamente um "while rodando para sempre" até sair explicitamente
         show_main_menu();  // Apenas imprime o menu principal (camada de VIEW)
         int option = read_int_in_range("Escolha uma opção [1-3,9]: ", 1, 9);
@@ -107,55 +117,43 @@ void run_main_menu(void) {
    - press_enter(NULL) aguarda ENTER para dar tempo de leitura ao usuário.
 */
 static void run_patient_menu(void) {
-    static PatientList list;        // Lista persistente enquanto o programa roda
-    static int initialized = 0;
-    if (!initialized) {
-        init_patient_list(&list);
-        initialized = 1;
-    }
-
     for (;;) {
         show_patient_menu();
         int option = read_int_in_range("Escolha uma opção [1-3,9]: ", 1, 9);
         if (option == 9) break;
 
         switch (option) {
-            case 1: {
+            case 1: {  // Inserir
                 Patient p;
                 if (read_patient_from_console(&p)) {
-                    insert_patient(&list, p);
-                    puts("Paciente inserido com sucesso!");
+                    if (insert_patient(&global_patient_list, &p)) {
+                        puts("Paciente cadastrado com sucesso.");
+                        print_patient_line(&p);
+                    } else {
+                        puts("Falha ao cadastrar (CPF/ID já existente ou erro de memória).");
+                    }
                 } else {
-                    puts("Falha ao cadastrar paciente.");
+                    puts("Entrada cancelada ou dados inválidos.");
                 }
                 break;
             }
             case 2:
-                print_all_patient(&list);
+                print_all_patient(&global_patient_list);
                 break;
             case 3: {
                 char cpf[15];
-                if (!read_cpf_from_console(cpf, sizeof cpf)) {
-                    puts("Falha de leitura.");
-                    break;
-                }
-                Patient* found = search_patient_by_CPF(&list, cpf);
-                if (found) {
-                    printf("Paciente encontrado: %s (%d anos)\n", found->name, found->age);
-                    /* ou: print_patient_line(found); */
-                } else {
-                    puts("Paciente não encontrado.");
+                if (read_cpf_from_console(cpf, sizeof cpf)) {
+                    const Patient *found = search_patient_by_CPF(&global_patient_list, cpf);
+                    if (found) print_patient_line(found);
+                    else puts("CPF não encontrado.");
                 }
                 break;
             }
             default:
                 puts("Opção inválida.");
         }
-
-        press_enter(NULL); // Pausa para o usuário ler a saída antes de redesenhar o menu
+        press_enter(NULL);
     }
-
-    free_list(&list);  // Limpa memória ao sair do submenu (opcional)
 }
 
 /*
