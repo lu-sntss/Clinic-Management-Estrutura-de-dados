@@ -34,6 +34,7 @@
 #include "main_controller.h"
 #include "view/menu_view.h"
 #include "util/input.h"
+#include "util/patient_io.h"
 #include "ds/patient_list.h"   // PatientList, insert/print/search/free
 #include "model/patient.h"     // Patient
 
@@ -121,34 +122,12 @@ static void run_patient_menu(void) {
         switch (option) {
             case 1: {
                 Patient p;
-                printf("ID: ");
-                scanf("%d", &p.id);
-                printf("Nome: ");
-                getchar(); // consome '\n'
-                fgets(p.name, sizeof(p.name), stdin);
-                p.name[strcspn(p.name, "\n")] = '\0';
-
-                printf("CPF: ");
-                fgets(p.cpf, sizeof(p.cpf), stdin);
-                p.cpf[strcspn(p.cpf, "\n")] = '\0';
-
-                printf("Idade: ");
-                scanf("%d", &p.age);
-
-                printf("Sexo (M/F): ");
-                getchar();
-                scanf("%c", &p.gender);
-
-                printf("Condição: ");
-                getchar();
-                fgets(p.condition, sizeof(p.condition), stdin);
-                p.condition[strcspn(p.condition, "\n")] = '\0';
-
-                printf("Prioridade [1-Alta / 2-Média / 3-Baixa]: ");
-                scanf("%d", &p.priority);
-
-                insert_patient(&list, p);
-                printf("Paciente inserido com sucesso!\n");
+                if (read_patient_from_console(&p)) {
+                    insert_patient(&list, p);
+                    puts("Paciente inserido com sucesso!");
+                } else {
+                    puts("Falha ao cadastrar paciente.");
+                }
                 break;
             }
             case 2:
@@ -156,16 +135,17 @@ static void run_patient_menu(void) {
                 break;
             case 3: {
                 char cpf[15];
-                printf("Digite o CPF: ");
-                getchar();
-                fgets(cpf, sizeof(cpf), stdin);
-                cpf[strcspn(cpf, "\n")] = '\0';
-
+                if (!read_cpf_from_console(cpf, sizeof cpf)) {
+                    puts("Falha de leitura.");
+                    break;
+                }
                 Patient* found = search_patient_by_CPF(&list, cpf);
-                if (found)
+                if (found) {
                     printf("Paciente encontrado: %s (%d anos)\n", found->name, found->age);
-                else
-                    printf("Paciente não encontrado.\n");
+                    /* ou: print_patient_line(found); */
+                } else {
+                    puts("Paciente não encontrado.");
+                }
                 break;
             }
             default:
@@ -232,4 +212,3 @@ static void run_history_menu(void) {
         press_enter(NULL); // Pausa para leitura
     }
 }
-

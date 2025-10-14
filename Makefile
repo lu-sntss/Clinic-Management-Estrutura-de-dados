@@ -22,7 +22,9 @@ SRC := src/main.c \
        src/controller/main_controller.c \
        src/view/menu_view.c \
        src/util/input.c \
-       src/ds/patient_list.c
+       src/util/patient_io.c \
+       src/ds/patient_list.c\
+       src/model/patient.c \
                                     
 # Define o nome do arquivo executável que será gerado.
 BIN := clinic
