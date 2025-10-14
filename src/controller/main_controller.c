@@ -109,7 +109,7 @@ static void run_patient_menu(void) {
     static PatientList list;        // Lista persistente enquanto o programa roda
     static int initialized = 0;
     if (!initialized) {
-        initList(&list);
+        init_patient_list(&list);
         initialized = 1;
     }
 
@@ -147,12 +147,12 @@ static void run_patient_menu(void) {
                 printf("Prioridade [1-Alta / 2-Média / 3-Baixa]: ");
                 scanf("%d", &p.priority);
 
-                insertPatient(&list, p);
+                insert_patient(&list, p);
                 printf("Paciente inserido com sucesso!\n");
                 break;
             }
             case 2:
-                printPatients(&list);
+                print_all_patient(&list);
                 break;
             case 3: {
                 char cpf[15];
@@ -161,7 +161,7 @@ static void run_patient_menu(void) {
                 fgets(cpf, sizeof(cpf), stdin);
                 cpf[strcspn(cpf, "\n")] = '\0';
 
-                Patient* found = searchPatientByCPF(&list, cpf);
+                Patient* found = search_patient_by_CPF(&list, cpf);
                 if (found)
                     printf("Paciente encontrado: %s (%d anos)\n", found->name, found->age);
                 else
@@ -175,7 +175,7 @@ static void run_patient_menu(void) {
         press_enter(NULL); // Pausa para o usuário ler a saída antes de redesenhar o menu
     }
 
-    freeList(&list);  // Limpa memória ao sair do submenu (opcional)
+    free_list(&list);  // Limpa memória ao sair do submenu (opcional)
 }
 
 /*
