@@ -30,9 +30,12 @@
 */
 
 #include <stdio.h>
+#include <string.h>            // strcspn, fgets
 #include "main_controller.h"
 #include "view/menu_view.h"
 #include "util/input.h"
+#include "ds/patient_list.h"   // PatientList, insert/print/search/free
+#include "model/patient.h"     // Patient
 
 /*
 -------------------------------------------------------------------------------
