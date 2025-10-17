@@ -12,8 +12,9 @@ CC      := gcc
 # -std=c11      : Usa o padrão C11 da linguagem C.
 # -Wall -Wextra : Ativa um conjunto extenso de avisos (warnings) para ajudar a encontrar possíveis erros.
 # -Wpedantic    : Garante que o código segue estritamente o padrão ISO C.
+# -g            : # BOA PRÁTICA: Adiciona informações de debug ao executável. Essencial para usar um debugger como o GDB.
 # -I./src       : Informa ao compilador para procurar arquivos de cabeçalho (.h) também no diretório 'src'.
-CFLAGS  := -std=c11 -Wall -Wextra -Wpedantic -I./src
+CFLAGS  := -std=c11 -Wall -Wextra -Wpedantic -g -I./src
 
 # Lista de todos os arquivos de código-fonte (.c) do projeto.
 # Se você adicionar um novo arquivo .c ao projeto, adicione o caminho para ele nesta lista.
@@ -23,9 +24,14 @@ SRC := src/main.c \
        src/view/menu_view.c \
        src/util/input.c \
        src/util/patient_io.c \
-       src/ds/patient_list.c\
-       src/model/patient.c \
-                                    
+       src/ds/patient_list.c \
+       src/ds/patient_queue.c \
+       src/model/patient.c
+
+# BOA PRÁTICA: Gera uma lista de arquivos objeto (.o) a partir da lista de fontes (.c).
+# Isso permite compilar apenas os arquivos que foram modificados, tornando o processo muito mais rápido.
+OBJ := $(SRC:.c=.o)
+       
 # Define o nome do arquivo executável que será gerado.
 BIN := clinic
 
@@ -37,19 +43,24 @@ BIN := clinic
 all: $(BIN)
 
 # Esta é a regra principal que compila o projeto.
-# Ela diz que para criar o arquivo '$(BIN)' (o executável 'clinic'),
-# é necessário ter todos os arquivos da lista '$(SRC)'.
-# Se qualquer um dos arquivos .c for alterado, o comando abaixo será executado para recompilar.
-$(BIN): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(BIN)
+# # MUDANÇA: Agora, ela junta (linka) os arquivos objeto (.o) pré-compilados para criar o executável.
+# É mais eficiente do que recompilar todos os .c toda vez.
+$(BIN): $(OBJ)
+	$(CC) $(OBJ) -o $(BIN)
+
+# # MUDANÇA: Esta nova regra ensina ao 'make' como transformar qualquer arquivo .c em um arquivo .o.
+# O '-c' diz ao compilador para "compilar, mas não linkar ainda".
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # A regra 'run' é um atalho para compilar (se necessário) e executar o programa.
 # Primeiro ela garante que '$(BIN)' existe e está atualizado, depois o executa.
-run: $(BIN)
+run: all
 	./$(BIN)
 
 # A regra 'clean' serve para limpar os arquivos gerados pela compilação.
-# Ela remove o arquivo executável. Útil para forçar uma recompilação completa do zero.
+# # MUDANÇA: Agora ela remove também os arquivos objeto (.o) para garantir uma limpeza completa.
+# Útil para forçar uma recompilação total do zero.
 clean:
-	rm -f $(BIN)
+	rm -f $(BIN) $(OBJ)
 # make clean no terminal
