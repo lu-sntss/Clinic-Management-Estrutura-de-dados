@@ -1,5 +1,5 @@
 /*
-===============================================================================
+ ==========================
  Módulo: menu_view.c
  Papel:  Responsável APENAS por exibir (imprimir) os menus na tela.
         Não lê entrada do usuário, não controla fluxo de navegação.
@@ -8,7 +8,7 @@
  Dependências:
    - <stdio.h>: puts() para imprimir linhas. (Dentro do solicitado pelo professor)
    - "menu_view.h": garante que as assinaturas aqui definidas batem com o header.
-===============================================================================
+ ==========================
 */
 
 #include <stdio.h>
@@ -24,7 +24,7 @@ void show_main_menu(void) {
     puts("2) Fila de Atendimento   (Fila)");
     puts("3) Histórico             (Pilha)");
     puts("9) Sair");
-    puts("============================================================");
+    puts(" ");
 }
 
 void show_patient_menu(void) {
@@ -32,17 +32,19 @@ void show_patient_menu(void) {
     puts("1) Inserir novo paciente");
     puts("2) Listar todos os pacientes");
     puts("3) Buscar paciente por CPF");
+    // puts("4) Remover paciente do sistema");
     puts("9) Voltar");
-    puts("=====================================================");
+    puts(" ");
 }
 
 void show_queue_menu(void) {
     puts("\n============ FILA DE ATENDIMENTO (FILA) ============");
     puts("1) Adicionar paciente à fila");
     puts("2) Chamar próximo paciente");
-    puts("3) Ver quem está na fila");
+    puts("3) Visualizar estado da fila de atendimento");
+    // puts("4) Remover paciente da fila de atendimento");
     puts("9) Voltar");
-    puts("====================================================");
+    puts(" ");
 }
 
 void show_history_menu(void) {
@@ -50,5 +52,5 @@ void show_history_menu(void) {
     puts("1) Visualizar últimos atendimentos");
     puts("2) Desfazer último atendimento");
     puts("9) Voltar");
-    puts("====================================================");
+    puts(" ");
 }

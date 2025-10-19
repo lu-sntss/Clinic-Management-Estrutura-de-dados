@@ -144,10 +144,14 @@ static void run_patient_menu(void) {
         switch (option) {
             case 1: {  // Inserir paciente
                 Patient p;
+                printf("\nCadastrando paciente -\n");
+                printf("\nInsira as informações solicitadas abaixo:\n");
                 if (read_patient_from_console(&p)) {
+                    
                     if (insert_patient(&global_patient_list, &p)) {
-                        puts("Paciente cadastrado com sucesso.");
+                        puts("\nPaciente cadastrado com sucesso.");
                         print_patient_line(&p);
+                        puts(""); // Pulo de linha simples
                     } else {
                         puts("\nFalha ao cadastrar (CPF/ID já existente ou erro de memória).");
                     }
@@ -157,7 +161,14 @@ static void run_patient_menu(void) {
                 break;
             }
             case 2:
+                // INTERTRAVAMENTO: bloqueia se a lista de pacientes estiver vazia 
+                if (is_patient_list_empty(&global_patient_list)) {
+                    puts("\nNenhum paciente cadastrado. Use a opção de cadastro para incluir pacientes.\n");
+                    break;
+                }
+
                 print_all_patient(&global_patient_list);
+                puts(""); // Pulo de linha simples
                 break;
             case 3: {
                 char cpf[15];
@@ -168,6 +179,9 @@ static void run_patient_menu(void) {
                 }
                 break;
             }
+            // case 4:
+            //     puts("[TODO] Remover paciente da fila por CPF");
+            //     break;
             default:
                 puts("Opção inválida.");
         }
@@ -175,22 +189,23 @@ static void run_patient_menu(void) {
     }
 }
 
-/* =========================
-   Submenu: Fila de Atendimento (Queue)
-========================= */
+/*
+  Imprime a FIFO de atendimento
 
+  Args:
+    *queue: Ponteiro para a lista de atendimento
 
-
-
-// FUNÇÃO DE IMPRESSÃO (sem alterações, mas mantida para contexto)
-static void print_queue(PatientQueue *q) {
-    if (is_queue_empty(q)) {
+  Returns:
+    os dados dos pacientes contidos na lista de atendimento.
+*/
+static void print_queue(PatientQueue *queue) {
+    if (is_queue_empty(queue)) {
         puts("\nFila de atendimento está vazia.\n");
         return;
     }
 
     printf("\n========== FILA DE ATENDIMENTO ==========\n");
-    QueueNode *curr = q->front;
+    QueueNode *curr = queue->front;
     int pos = 1;
     while (curr) {
         printf("%d) ", pos++);
@@ -200,7 +215,9 @@ static void print_queue(PatientQueue *q) {
     printf("=========================================\n");
 }
 
-
+/* =========================
+   Submenu: Fila de Atendimento (Queue)
+========================= */
 static void run_queue_menu(void) {
     for (;;) {
         show_queue_menu();
@@ -210,7 +227,7 @@ static void run_queue_menu(void) {
         switch (option) {
             case 1: { // Adicionar paciente à fila
 
-                /* --- INTERTRAVAMENTO: bloqueia se a lista estiver vazia --- */
+                // INTERTRAVAMENTO: bloqueia se a lista estiver vazia
                 if (is_patient_list_empty(&global_patient_list)) {
                     puts("\nNenhum paciente cadastrado. Use o menu 1 (Cadastro) para incluir pacientes.\n");
                     break;
@@ -254,7 +271,9 @@ static void run_queue_menu(void) {
             case 3:
                 print_queue(&global_patient_queue);
                 break;
-
+            // case 4:
+            //     puts("[TODO] Remover paciente da fila por CPF");
+            //     break;
             default:
                 puts("Opção inválida.");
         }

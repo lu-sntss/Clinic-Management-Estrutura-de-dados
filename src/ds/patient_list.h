@@ -37,7 +37,7 @@ const Patient* search_patient_by_CPF(const PatientList *list, const char *cpf);
 void free_list(PatientList* list);
 
 /* 
-    Verifica se lsita de pacientes está vazia
+    Verifica se lista de pacientes está vazia.
 
     Args:
     list: Ponteiro para a lista a ser verificada.
