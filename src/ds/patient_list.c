@@ -197,3 +197,19 @@ void print_all_patient(PatientList* list) {
         current = current->next; // Move para o próximo nó
     }
 }
+
+
+/*
+  Verifica se a lista de pacientes está vazia.
+
+  Args:
+    list: Ponteiro para a lista a ser verificada.
+
+  Returns:
+    int: 1 se vazia (ou se list == NULL), 0 caso contrário.
+*/
+int is_patient_list_empty(const PatientList *list) {
+    if (list == NULL) return 1;
+    /* Ajuste o nome do campo se necessário (ex.: list->first). */
+    return (list->head == NULL) ? 1 : 0;
+}

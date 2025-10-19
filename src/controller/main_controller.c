@@ -49,7 +49,6 @@ static int g_inited = 0;
 
 /* Fila global de pacientes */
 static PatientQueue global_patient_queue;
-static int g_queue_inited = 0;
 
 /* =========================
    Função de teste rápido
@@ -88,12 +87,24 @@ static void quick_test_patients(void) {
 }
 
 /* =========================
+   Inicialização leve (sem dados de teste)
+   ========================= */
+static void ensure_initialized(void) {
+    if (g_inited) return;
+    init_patient_list(&global_patient_list);
+    init_queue(&global_patient_queue);
+    g_inited = 1;
+}
+
+/* =========================
    Loop do menu principal
    ========================= */
 void run_main_menu(void) {
     // Apenas chama a função de inicialização.
     // Ela mesma vai garantir que só roda uma vez, na ordem certa.
-    // quick_test_patients();
+    
+    ensure_initialized(); // Chama se sem teste
+    // quick_test_patients(); // Chama se com teste
 
     for (;;) {
         show_main_menu();
@@ -138,10 +149,10 @@ static void run_patient_menu(void) {
                         puts("Paciente cadastrado com sucesso.");
                         print_patient_line(&p);
                     } else {
-                        puts("Falha ao cadastrar (CPF/ID já existente ou erro de memória).");
+                        puts("\nFalha ao cadastrar (CPF/ID já existente ou erro de memória).");
                     }
                 } else {
-                    puts("Entrada cancelada ou dados inválidos.");
+                    puts("\nEntrada cancelada ou dados inválidos.");
                 }
                 break;
             }
@@ -153,7 +164,7 @@ static void run_patient_menu(void) {
                 if (read_cpf_from_console(cpf, sizeof cpf)) {
                     const Patient *found = search_patient_by_CPF(&global_patient_list, cpf);
                     if (found) print_patient_line(found);
-                    else puts("CPF não encontrado.");
+                    else puts("\nCPF não encontrado.\n");
                 }
                 break;
             }
@@ -198,6 +209,13 @@ static void run_queue_menu(void) {
 
         switch (option) {
             case 1: { // Adicionar paciente à fila
+
+                /* --- INTERTRAVAMENTO: bloqueia se a lista estiver vazia --- */
+                if (is_patient_list_empty(&global_patient_list)) {
+                    puts("\nNenhum paciente cadastrado. Use o menu 1 (Cadastro) para incluir pacientes.\n");
+                    break;
+                }
+
                 puts("=== Pacientes disponíveis na lista ===");
                 print_all_patient(&global_patient_list);
 
