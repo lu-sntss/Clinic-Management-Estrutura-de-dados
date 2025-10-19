@@ -62,9 +62,9 @@ static void quick_test_patients(void) {
     init_queue(&global_patient_queue);
 
     Patient test_data[] = {
-        {1, "Alice (Normal)", "111.111.111-11", 30, 'F', "Normal", 3},
-        {2, "Bob (Urgente)", "222.222.222-22", 25, 'M', "Urgente", 1},
-        {3, "Carol (Média)", "333.333.333-33", 40, 'F', "Média", 2}
+        {1, "Alice", "111", 30, 'F', "Normal", 3},
+        {2, "Bob", "222", 25, 'M', "Urgente", 1},
+        {3, "Carol", "333", 40, 'F', "Média", 2}
     };
     int num_patients = sizeof(test_data) / sizeof(Patient);
 
@@ -93,7 +93,7 @@ static void quick_test_patients(void) {
 void run_main_menu(void) {
     // Apenas chama a função de inicialização.
     // Ela mesma vai garantir que só roda uma vez, na ordem certa.
-    quick_test_patients();
+    // quick_test_patients();
 
     for (;;) {
         show_main_menu();

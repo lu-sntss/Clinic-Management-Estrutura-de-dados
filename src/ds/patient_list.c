@@ -184,7 +184,7 @@ void free_list(PatientList* list) {
 */
 void print_all_patient(PatientList* list) {
     if (list->head == NULL) { // Caso especial: lista vazia
-        printf("Nenhum paciente cadastrado.\n");
+        printf("\nNenhum paciente cadastrado.\n");
         return;
     }
 
