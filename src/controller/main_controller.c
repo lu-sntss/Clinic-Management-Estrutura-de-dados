@@ -34,6 +34,7 @@
 #include "util/patient_io.h"
 #include "ds/patient_list.h"
 #include "ds/patient_queue.h"
+#include "ds/history_stack.h" // import da pilha do histórico
 #include "model/patient.h"
 
 /* ------------------------------
@@ -43,12 +44,15 @@ static void run_patient_menu(void);
 static void run_queue_menu(void);
 static void run_history_menu(void);
 
-/* Lista global de pacientes */
+// Lista global de pacientes 
 static PatientList global_patient_list;
 static int g_inited = 0;
 
-/* Fila global de pacientes */
+// Fila global de pacientes 
 static PatientQueue global_patient_queue;
+
+// Instancia global da pilha de histórico
+static HistoryStack global_history;
 
 /* =========================
    Função de teste rápido
