@@ -59,3 +59,79 @@ HistoryRecord make_history_record(const Patient* patient){
     }
     return record; // Devolve o objeto record com os dados manipulados
 }
+
+/*
+ Empilha um registro de histórico na pilha.
+
+ Args:
+   stack: Ponteiro para a pilha global.
+   record: Registro de histórico (snapshot do paciente).
+*/
+void push_history(HistoryStack* stack, HistoryRecord record) {
+    if (!stack) return;
+
+    HistoryNode* newNode = malloc(sizeof(HistoryNode));
+    if (!newNode) {
+        puts("Erro: falha ao alocar memória para histórico.");
+        return;
+    }
+
+    newNode->data = record;
+    newNode->next = stack->top;
+    stack->top = newNode;
+    stack->size++;
+}
+
+/*
+ Desempilha o último registro (desfazer último atendimento).
+ Retorna 1 se removeu com sucesso, 0 se pilha vazia.
+*/
+int pop_history(HistoryStack* stack, HistoryRecord* out_record) {
+    if (!stack || !stack->top) return 0;
+
+    HistoryNode* temp = stack->top;
+    if (out_record) *out_record = temp->data;
+
+    stack->top = temp->next;
+    free(temp);
+    stack->size--;
+    return 1;
+}
+
+/*
+ Exibe todo o histórico (topo → base)
+*/
+void print_history(const HistoryStack* stack) {
+    if (!stack || !stack->top) {
+        puts("\nNenhum atendimento realizado ainda.\n");
+        return;
+    }
+
+    printf("\n========== HISTÓRICO DE ATENDIMENTOS ==========\n");
+    HistoryNode* curr = stack->top;
+    int index = 1;
+    while (curr) {
+        const HistoryRecord* rec = &curr->data;
+        printf("%d) [%s] %s (CPF: %s, prioridade %d)\n",
+               index++, rec->timestamp,
+               rec->patient.name,
+               rec->patient.cpf,
+               rec->patient.priority);
+        curr = curr->next;
+    }
+    printf("===============================================\n");
+}
+
+/*
+ Libera toda a memória da pilha de histórico.
+*/
+void free_history(HistoryStack* stack) {
+    HistoryNode* curr = stack->top;
+    while (curr) {
+        HistoryNode* temp = curr;
+        curr = curr->next;
+        free(temp);
+    }
+    stack->top = NULL;
+    stack->size = 0;
+}

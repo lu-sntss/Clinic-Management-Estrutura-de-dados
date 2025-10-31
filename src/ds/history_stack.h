@@ -27,5 +27,14 @@ typedef struct {
 } HistoryStack;
 
 
+/* Funções públicas da pilha de histórico */
+void init_history_stack(HistoryStack* stack);
+HistoryRecord make_history_record(const Patient* patient);
+void push_history(HistoryStack* stack, HistoryRecord record);
+int pop_history(HistoryStack* stack, HistoryRecord* out_record);
+void print_history(const HistoryStack* stack);
+void free_history(HistoryStack* stack);
+
+
 
 #endif

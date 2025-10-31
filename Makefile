@@ -37,7 +37,9 @@ SRC := src/main.c \
        src/util/patient_io.c \
        src/ds/patient_list.c \
        src/ds/patient_queue.c \
+	   src/history_stack.c \
        src/model/patient.c
+
 
 # BOA PRÁTICA: Gera uma lista de arquivos objeto (.o) a partir da lista de fontes (.c).
 # Isso permite compilar apenas os arquivos que foram modificados, tornando o processo muito mais rápido.
