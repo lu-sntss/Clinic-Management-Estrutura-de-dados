@@ -34,7 +34,6 @@
 #include "util/patient_io.h"
 #include "ds/patient_list.h"
 #include "ds/patient_queue.h"
-#include "ds/history_stack.h" // import da pilha do histórico
 #include "model/patient.h"
 
 /* ------------------------------
@@ -44,15 +43,12 @@ static void run_patient_menu(void);
 static void run_queue_menu(void);
 static void run_history_menu(void);
 
-// Lista global de pacientes 
+/* Lista global de pacientes */
 static PatientList global_patient_list;
 static int g_inited = 0;
 
-// Fila global de pacientes 
+/* Fila global de pacientes */
 static PatientQueue global_patient_queue;
-
-// Instancia global da pilha de histórico
-static HistoryStack global_history;
 
 /* =========================
    Função de teste rápido
@@ -97,7 +93,6 @@ static void ensure_initialized(void) {
     if (g_inited) return;
     init_patient_list(&global_patient_list);
     init_queue(&global_patient_queue);
-    init_history_stack(&global_history);
     g_inited = 1;
 }
 
@@ -130,7 +125,6 @@ void run_main_menu(void) {
                 // Adicionando a liberação de memória para evitar vazamentos
                 free_list(&global_patient_list);
                 free_queue(&global_patient_queue);
-                free_history(&global_history);
                 return;
             default:
                 puts("Opção inválida.");
@@ -268,16 +262,7 @@ static void run_queue_menu(void) {
                 if (p) {
                     printf("\n🚨 Chamando próximo paciente:\n");
                     print_patient_line(p);
-                    
-                    // 1. Criar registro de histórico
-                    HistoryRecord record = make_history_record(p);
-
-                    // 2. Empilhar na pilha de histórico
-                    push_history(&global_history, record);
-                    
-                    // Libera a memória da CÓPIA do paciente                                                         
-                    free(p);
-                    puts("\n✅ Atendimento registrado no histórico.\n");
+                    free(p); // Libera a memória da CÓPIA do paciente
                 } else {
                     puts("\nFila vazia.\n");
                 }
@@ -307,16 +292,10 @@ static void run_history_menu(void) {
 
         switch (option) {
             case 1: 
-                print_history(&global_history); 
+                puts("[TODO] Visualizar últimos atendimentos"); 
                 break;
             case 2: 
-                HistoryRecord last;
-                if (pop_history(&global_history, &last)) {
-                    printf("\n⏪ Último atendimento desfeito: %s (CPF %s)\n",
-                        last.patient.name, last.patient.cpf);
-                } else {
-                    puts("\nNenhum histórico para desfazer.\n");
-                }
+                puts("[TODO] Desfazer último atendimento"); 
                 break;
             default: 
                 puts("Opção inválida.");
