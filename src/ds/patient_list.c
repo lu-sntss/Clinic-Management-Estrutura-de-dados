@@ -176,17 +176,12 @@ void free_list(PatientList* list) {
  Parâmetros:
    - list: A lista de pacientes a ser exibida.
  Lógica:
-   - Primeiro, trata o caso de a lista estar vazia.
    - Cria um ponteiro temporário 'current' que começa na cabeça da lista.
    - Em um loop, enquanto 'current' não for NULL (fim da lista):
      a. Imprime os dados do paciente no nó atual.
      b. Avança 'current' para o próximo nó da sequência (current = current->next).
 */
 void print_all_patient(PatientList* list) {
-    if (list->head == NULL) { // Caso especial: lista vazia
-        printf("\nNenhum paciente cadastrado.\n");
-        return;
-    }
 
     Node* current = list->head; // Ponteiro para percorrer a lista sem perder a referência da cabeça
     printf("\n=== Lista de Pacientes ===\n");
@@ -196,4 +191,20 @@ void print_all_patient(PatientList* list) {
                p.id, p.name, p.cpf, p.age, p.priority);
         current = current->next; // Move para o próximo nó
     }
+}
+
+
+/*
+  Verifica se a lista de pacientes está vazia.
+
+  Args:
+    list: Ponteiro para a lista a ser verificada.
+
+  Returns:
+    int: 1 se vazia (ou se list == NULL), 0 caso contrário.
+*/
+int is_patient_list_empty(const PatientList *list) {
+    if (list == NULL) return 1;
+    /* Ajuste o nome do campo se necessário (ex.: list->first). */
+    return (list->head == NULL) ? 1 : 0;
 }

@@ -36,4 +36,15 @@ const Patient* search_patient_by_CPF(const PatientList *list, const char *cpf);
 /* Libera toda a memória alocada pelos nós da lista, evitando memory leaks. */
 void free_list(PatientList* list);
 
+/* 
+    Verifica se lista de pacientes está vazia.
+
+    Args:
+    list: Ponteiro para a lista a ser verificada.
+
+  Returns:
+    int: 1 se vazia (ou não inicializada), 0 caso contrário.
+*/
+int is_patient_list_empty(const PatientList *list);
+
 #endif /* PATIENT_LIST_H */

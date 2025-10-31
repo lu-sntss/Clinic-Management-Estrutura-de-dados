@@ -34,6 +34,7 @@
 #include "util/patient_io.h"
 #include "ds/patient_list.h"
 #include "ds/patient_queue.h"
+#include "ds/history_stack.h" // import da pilha do histórico
 #include "model/patient.h"
 
 /* ------------------------------
@@ -43,13 +44,15 @@ static void run_patient_menu(void);
 static void run_queue_menu(void);
 static void run_history_menu(void);
 
-/* Lista global de pacientes */
+// Lista global de pacientes 
 static PatientList global_patient_list;
 static int g_inited = 0;
 
-/* Fila global de pacientes */
+// Fila global de pacientes 
 static PatientQueue global_patient_queue;
-static int g_queue_inited = 0;
+
+// Instancia global da pilha de histórico
+static HistoryStack global_history;
 
 /* =========================
    Função de teste rápido
@@ -88,12 +91,25 @@ static void quick_test_patients(void) {
 }
 
 /* =========================
+   Inicialização leve (sem dados de teste)
+   ========================= */
+static void ensure_initialized(void) {
+    if (g_inited) return;
+    init_patient_list(&global_patient_list);
+    init_queue(&global_patient_queue);
+    init_history_stack(&global_history);
+    g_inited = 1;
+}
+
+/* =========================
    Loop do menu principal
    ========================= */
 void run_main_menu(void) {
     // Apenas chama a função de inicialização.
     // Ela mesma vai garantir que só roda uma vez, na ordem certa.
-    // quick_test_patients();
+    
+    ensure_initialized(); // Chama se sem teste
+    // quick_test_patients(); // Chama se com teste
 
     for (;;) {
         show_main_menu();
@@ -114,6 +130,7 @@ void run_main_menu(void) {
                 // Adicionando a liberação de memória para evitar vazamentos
                 free_list(&global_patient_list);
                 free_queue(&global_patient_queue);
+                free_history(&global_history);
                 return;
             default:
                 puts("Opção inválida.");
@@ -133,30 +150,44 @@ static void run_patient_menu(void) {
         switch (option) {
             case 1: {  // Inserir paciente
                 Patient p;
+                printf("\nCadastrando paciente -\n");
+                printf("\nInsira as informações solicitadas abaixo:\n");
                 if (read_patient_from_console(&p)) {
+                    
                     if (insert_patient(&global_patient_list, &p)) {
-                        puts("Paciente cadastrado com sucesso.");
+                        puts("\nPaciente cadastrado com sucesso.");
                         print_patient_line(&p);
+                        puts(""); // Pulo de linha simples
                     } else {
-                        puts("Falha ao cadastrar (CPF/ID já existente ou erro de memória).");
+                        puts("\nFalha ao cadastrar (CPF/ID já existente ou erro de memória).");
                     }
                 } else {
-                    puts("Entrada cancelada ou dados inválidos.");
+                    puts("\nEntrada cancelada ou dados inválidos.");
                 }
                 break;
             }
             case 2:
+                // INTERTRAVAMENTO: bloqueia se a lista de pacientes estiver vazia 
+                if (is_patient_list_empty(&global_patient_list)) {
+                    puts("\nNenhum paciente cadastrado. Use a opção de cadastro para incluir pacientes.\n");
+                    break;
+                }
+
                 print_all_patient(&global_patient_list);
+                puts(""); // Pulo de linha simples
                 break;
             case 3: {
                 char cpf[15];
                 if (read_cpf_from_console(cpf, sizeof cpf)) {
                     const Patient *found = search_patient_by_CPF(&global_patient_list, cpf);
                     if (found) print_patient_line(found);
-                    else puts("CPF não encontrado.");
+                    else puts("\nCPF não encontrado.\n");
                 }
                 break;
             }
+            // case 4:
+            //     puts("[TODO] Remover paciente da fila por CPF");
+            //     break;
             default:
                 puts("Opção inválida.");
         }
@@ -164,22 +195,23 @@ static void run_patient_menu(void) {
     }
 }
 
-/* =========================
-   Submenu: Fila de Atendimento (Queue)
-========================= */
+/*
+  Imprime a FIFO de atendimento
 
+  Args:
+    *queue: Ponteiro para a lista de atendimento
 
-
-
-// FUNÇÃO DE IMPRESSÃO (sem alterações, mas mantida para contexto)
-static void print_queue(PatientQueue *q) {
-    if (is_queue_empty(q)) {
+  Returns:
+    os dados dos pacientes contidos na lista de atendimento.
+*/
+static void print_queue(PatientQueue *queue) {
+    if (is_queue_empty(queue)) {
         puts("\nFila de atendimento está vazia.\n");
         return;
     }
 
     printf("\n========== FILA DE ATENDIMENTO ==========\n");
-    QueueNode *curr = q->front;
+    QueueNode *curr = queue->front;
     int pos = 1;
     while (curr) {
         printf("%d) ", pos++);
@@ -189,7 +221,9 @@ static void print_queue(PatientQueue *q) {
     printf("=========================================\n");
 }
 
-
+/* =========================
+   Submenu: Fila de Atendimento (Queue)
+========================= */
 static void run_queue_menu(void) {
     for (;;) {
         show_queue_menu();
@@ -198,6 +232,13 @@ static void run_queue_menu(void) {
 
         switch (option) {
             case 1: { // Adicionar paciente à fila
+
+                // INTERTRAVAMENTO: bloqueia se a lista estiver vazia
+                if (is_patient_list_empty(&global_patient_list)) {
+                    puts("\nNenhum paciente cadastrado. Use o menu 1 (Cadastro) para incluir pacientes.\n");
+                    break;
+                }
+
                 puts("=== Pacientes disponíveis na lista ===");
                 print_all_patient(&global_patient_list);
 
@@ -227,7 +268,16 @@ static void run_queue_menu(void) {
                 if (p) {
                     printf("\n🚨 Chamando próximo paciente:\n");
                     print_patient_line(p);
-                    free(p); // Libera a memória da CÓPIA do paciente
+                    
+                    // 1. Criar registro de histórico
+                    HistoryRecord record = make_history_record(p);
+
+                    // 2. Empilhar na pilha de histórico
+                    push_history(&global_history, record);
+                    
+                    // Libera a memória da CÓPIA do paciente                                                         
+                    free(p);
+                    puts("\n✅ Atendimento registrado no histórico.\n");
                 } else {
                     puts("\nFila vazia.\n");
                 }
@@ -236,7 +286,9 @@ static void run_queue_menu(void) {
             case 3:
                 print_queue(&global_patient_queue);
                 break;
-
+            // case 4:
+            //     puts("[TODO] Remover paciente da fila por CPF");
+            //     break;
             default:
                 puts("Opção inválida.");
         }
@@ -255,10 +307,16 @@ static void run_history_menu(void) {
 
         switch (option) {
             case 1: 
-                puts("[TODO] Visualizar últimos atendimentos"); 
+                print_history(&global_history); 
                 break;
             case 2: 
-                puts("[TODO] Desfazer último atendimento"); 
+                HistoryRecord last;
+                if (pop_history(&global_history, &last)) {
+                    printf("\n⏪ Último atendimento desfeito: %s (CPF %s)\n",
+                        last.patient.name, last.patient.cpf);
+                } else {
+                    puts("\nNenhum histórico para desfazer.\n");
+                }
                 break;
             default: 
                 puts("Opção inválida.");
