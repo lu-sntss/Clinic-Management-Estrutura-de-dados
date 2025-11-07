@@ -248,7 +248,7 @@ static void run_queue_menu(void) {
                         *copy = *p;
                         // Chama a nova função corrigida
                         enqueue(&global_patient_queue, copy);
-                        printf("✅ Paciente '%s' adicionado à fila (prioridade %d).\n", copy->name, copy->priority);
+                        printf(" Paciente '%s' adicionado à fila (prioridade %d).\n", copy->name, copy->priority);
                     } else {
                         puts("CPF não encontrado.");
                     }
@@ -260,7 +260,7 @@ static void run_queue_menu(void) {
                 Patient *p = dequeue(&global_patient_queue);
 
                 if (p) {
-                    printf("\n🚨 Chamando próximo paciente:\n");
+                    printf("\n Chamando próximo paciente:\n");
                     print_patient_line(p);
                     free(p); // Libera a memória da CÓPIA do paciente
                 } else {
