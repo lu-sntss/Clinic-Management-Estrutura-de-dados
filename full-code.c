@@ -1,3 +1,12 @@
+// Projeto Estrutura de dados
+// Gerenciamento de fila de espera de pacientes
+// Doscente: Pedro Kislansky
+// Discentes: 
+//  Lucas Araújo Santos - 202304266921
+//  Eduardo Miguel Santos Lima - 202303234181
+//  Gustavo Cerqueira Bonfim Oliveira - 202303392877
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
